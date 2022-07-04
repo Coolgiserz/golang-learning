@@ -4,8 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+
+	// "io"
+	"os"
 	"strings"
 )
+
+type intGen func() int
 
 //类似生成器
 func fib() intGen {
@@ -16,15 +21,27 @@ func fib() intGen {
 	}
 }
 
-//go语言也能给函数实现接口，方法的“接收者”也是参数，函数式编程的理念中，函数可作为参数，因此也可以作为接收者
-func printFileContents(reader io.Reader) {
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+func writeFile(filename string) {
+	file, err := os.Create(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	fibWriter := bufio.NewWriter(file)
+	defer fibWriter.Flush()
+	f := fib()
+	for i := 0; i < 30; i += 1 {
+		fmt.Fprintln(fibWriter, f())
 	}
 }
 
-type intGen func() int
+//go语言也能给函数实现接口，方法的“接收者”也是参数，函数式编程的理念中，函数可作为参数，因此也可以作为接收者
+// func printFileContents(reader io.Reader) {
+// 	scanner := bufio.NewScanner(reader)
+// 	for scanner.Scan() {
+// 		fmt.Println(scanner.Text())
+// 	}
+// }
 
 //为函数类型intGen实现io.Reader接口
 //type Reader interface {
@@ -40,10 +57,10 @@ func (g intGen) Read(p []byte) (n int, err error) {
 	return strings.NewReader(s).Read(p)
 }
 func main() {
-	f := fib()
-	printFileContents(f) //f是intGen类型，已经实现了io.Reader接口，因此可以作为printFileContents函数的参数
+	// f := fib()
+	// printFileContents(f) //f是intGen类型，已经实现了io.Reader接口，因此可以作为printFileContents函数的参数
 	// for i := 0; i < 10; i += 1 {
 	// 	fmt.Println(f())
 	// }
-
+	writeFile("fib.txt")
 }
