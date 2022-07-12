@@ -16,13 +16,19 @@ type appHandler func(w http.ResponseWriter, r *http.Request) error
 func errHandler(app appHandler) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := app(w, r)
+
 		if err != nil {
 			log.Warn("Error request %s\n", err) //gopm模块下的log功能
 			// log.Printf("Error request %s\n", err) //标准库的日志模块log
+			//用户错误
+			if userErr, ok := err.(userError); ok {
+				http.Error(w, userErr.Message(), http.StatusBadRequest) //将用户自定义的错误消息（string）和状态码（这里定义为400）写入返回的http响应中
+				return
+			}
+			//系统错误
 			code := http.StatusOK
 			switch {
 			case os.IsNotExist(err): //无文件
-
 				code = http.StatusNotFound
 			case os.IsPermission(err): //没权限
 				code = http.StatusForbidden
@@ -62,4 +68,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+type userError interface {
+	error
+	Message() string
 }

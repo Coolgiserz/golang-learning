@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -9,16 +10,42 @@ import (
 	"testing"
 )
 
+//测试用自定义错误类型,实现userError接口
+type testCustomedError string
+
+func (e testCustomedError) Error() string {
+	return e.Message()
+}
+
+func (e testCustomedError) Message() string {
+	return string(e)
+}
 func errNotFound(_ http.ResponseWriter, _ *http.Request) error {
 	return os.ErrNotExist
 }
 
+func errIsPermission(_ http.ResponseWriter, _ *http.Request) error {
+	return os.ErrPermission
+}
+
+func errInternalServerError(_ http.ResponseWriter, _ *http.Request) error {
+	return errors.New("Internal error")
+}
+
+func errCustomedError(_ http.ResponseWriter, _ *http.Request) error {
+	return testCustomedError("User error")
+}
+
+//全局定义的公共测试用例，可被TestErrHandler和TestErrHandlerInServer的测试流程共用
 var tests = []struct {
 	a       appHandler
 	code    int
 	message string
 }{
 	{errNotFound, 404, "Not Found"},
+	{errIsPermission, 403, "Forbidden"},
+	{errInternalServerError, 500, "Internal"},
+	{errCustomedError, 400, "User error"},
 }
 
 //httptest 专门用于测试http服务的标准库
@@ -46,7 +73,7 @@ func verifyResponse(r *http.Response, code int, message string, t *testing.T) {
 	body := string(b)
 	body = strings.Trim(body, "\n")
 	if r.StatusCode != code || string(body) != message {
-		t.Errorf("\nError, expected code: %d, message: %s \n got code %d, message %s", code, message, r.StatusCode, body)
+		t.Errorf("\nError, expected (code, message): (%d, %s) \n got (code, message): (%d, %s)", code, message, r.StatusCode, body)
 	}
 }
 
