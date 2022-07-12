@@ -30,4 +30,26 @@ func TestLongestSubstring(t *testing.T) {
 			t.Errorf("Error occurred: lengthOfLongestSubstring1(%s): got %d, expected %d", test.str, actual, test.length)
 		}
 	}
+
+	// for _, test := range testcases {
+	// 	if actual := lengthOfLongestSubstring(test.str); actual != test.length {
+	// 		t.Errorf("Error occurred: lengthOfLongestSubstring(%s): got %d, expected %d", test.str, actual, test.length)
+	// 	}
+	// }
+}
+
+//性能测试
+func BenchmarkSubStr(b *testing.B) {
+	testStr := "军敌军还有五秒到达战场"
+	ans := 10
+	b.Logf("len(testStr)=%d", len(testStr))
+	b.ResetTimer() //重置计时起点
+	for i := 0; i < b.N; i++ {
+		if actual := lengthOfLongestSubstring1(testStr); actual != ans {
+			if actual := lengthOfLongestSubstring1(testStr); actual != ans {
+				b.Errorf("Error occurred: lengthOfLongestSubstring1(%s): got %d, expected %d", testStr, actual, ans)
+			}
+		}
+
+	}
 }
