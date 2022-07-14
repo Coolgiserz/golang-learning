@@ -15,3 +15,14 @@ func (node *TreeNode) TraverseFunc(f func(*TreeNode)) {
 	f(node)
 	node.Right.TraverseFunc(f)
 }
+
+func (node *TreeNode) TraverseWithChannel() chan *TreeNode {
+	out := make(chan *TreeNode)
+	go func() {
+		node.TraverseFunc(func(tn *TreeNode) {
+			out <- tn
+		})
+		close(out) //func close(c chan<- Type)关闭通道，所有消息已发送完毕。
+	}()
+	return out
+}

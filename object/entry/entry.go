@@ -32,9 +32,10 @@ func main() {
 	root.Right.Left = new(object.TreeNode)
 	root.Right.Right = object.CreateNode(18)
 	root.Traverse()
-	fmt.Println("------------")
-	root.SetValue(10)
-	root.Traverse()
+
+	// fmt.Println("----Test SetValue--------")
+	// root.SetValue(10)
+	// root.Traverse()
 
 	// fmt.Println("------------")
 	// pRoot := &root
@@ -50,4 +51,14 @@ func main() {
 	fmt.Println("-----+++-------")
 	myroot := myTreeNode{&root}
 	myroot.postOrder()
+
+	fmt.Println("---test traverseWithChannel---------")
+	c := root.TraverseWithChannel()
+	maxNode := 0
+	for node := range c {
+		if node.Value > maxNode {
+			maxNode = node.Value
+		}
+	}
+	fmt.Printf("MaxNode: %d\n", maxNode)
 }
